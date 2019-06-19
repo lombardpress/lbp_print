@@ -96,22 +96,37 @@ class RemoteTranscription(Transcription):
     """
     def __init__(self, input):
         Transcription.__init__(self, input)
+        # get resource
         self.resource = lbppy.Resource.find(input)
-        self.canonical_transcriptions = [m.resource().canonical_transcription()
-                                         for m in self.resource.manifestations()]
-        self.transcription_object = [trans for trans in self.canonical_transcriptions
-                                     if trans.resource().transcription_type() == 'critical'][0]
-        if not self.transcription_object:
+        # figure what type of resource it is
+        # expression, manifestation, transcription ()
+        type = self.resource.type()
+
+        self.transcription = ""
+        if type.to_s() == "http://scta.info/resource/expression":
+            self.transcription = self.resource.canonical_manifestation().resource().canonical_transcription().resource()
+        elif type.to_s() == "http://scta.info/resource/manifestation":
+            self.transcription = self.resource.canonical_transcription().resource()
+        elif type.to_s() == "http://scta.info/resource/transcription":
+            self.transcription = self.resource
+
+
+
+        #self.canonical_transcriptions = [m.resource().canonical_transcription()
+        #                                 for m in self.resource.manifestations()]
+        #self.transcription_object = [trans for trans in self.canonical_transcriptions
+        #                             if trans.resource().transcription_type() == 'critical'][0]
+        #if not self.transcription_object:
             # If no critical, can we just take the first diplomatic? Better alternatives?
-            self.transcription_object = self.canonical_transcriptions[0]
+        #    self.transcription_object = self.canonical_transcriptions[0]
         self.file = self.__define_file()
         self.lbp_schema_info = self.get_schema_info()
 
     def get_schema_info(self):
         """Return the validation schema version."""
         return {
-            'version': self.transcription_object.resource().file().validating_schema_version(),
-            'type': self.transcription_object.resource().transcription_type()
+            'version': self.transcription.file().validating_schema_version(),
+            'type': self.transcription.transcription_type()
         }
 
     def __define_file(self):
@@ -119,7 +134,7 @@ class RemoteTranscription(Transcription):
         """
         logging.debug("Remote resource located. Downloading ...")
         transcription_file, _ = urllib.request.urlretrieve(
-            self.transcription_object.resource().file().file().geturl()
+            self.transcription.file().file().geturl()
         )
         logging.info("Download of remote resource finished.")
         return open(transcription_file)

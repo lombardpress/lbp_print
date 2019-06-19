@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+docopt = "==0.6.2"
+isodate = "==0.5.4"
+lbppy = {editable = true,git = "https://github.com/lombardpress/lbppy.git",ref = "f272e44429fcbd3f19384471c9cfb3903100fb30"}
+lxml = "==3.7.3"
+pyparsing = "==2.2.0"
+rdflib = "==4.2.2"
+untangle = "==1.1.0"
+SPARQLWrapper = "==1.8.0"
+
+[requires]
+python_version = "3.6"
